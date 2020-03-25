@@ -123,14 +123,14 @@ export default {
 			  }],
 			  poster: 'http://media.w3.org/2010/05/video/poster.png'
 			}];
-		self.app().bind_width_listener((w)=>{
+		self.app().bind_width_listener('video', (w)=>{
 			if(self.syncWidth){
 				var menu_width = parseInt(self.app().menuHeaderWidth);
 				console.log("menu_width:", menu_width, ",w:", w);
 				self.playerOptions.width = w - menu_width - 320;
 			}
 		});
-		self.app().check_st(utils.STATE.START, (v, ex_params)=>{
+		self.app().check_st('video', utils.STATE.START, (v, ex_params)=>{
 			if(ex_params.logined){
 				self.player.playlist(self.playlist);
 				self.player.playlist.autoadvance(0);

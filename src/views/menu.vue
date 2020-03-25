@@ -11,7 +11,7 @@
 		  <lg ref="login">
 			  <table>
 				  <tr>
-					  <td><img class="portrait" height="30px" width="30px" :src="'https://himg.bdimg.com/sys/portrait/item/'+portrait+'.jpg'"/></td>
+					  <td><img class="portrait" height="30px" width="30px" :src="portrait_url"/></td>
 					  <td>{{markname}}</td>
 				  </tr>
 				  <tr>
@@ -40,11 +40,11 @@
 				</el-menu-item>
 				<el-menu-item index="3">
 					<i class="el-icon-tickets"></i>
-					<span slot="title">获取记录</span>
+					<span slot="title">众筹记录</span>
 				</el-menu-item>
 				<el-menu-item index="4">
 					<i class="el-icon-download"></i>
-					<span slot="title">下载记录</span>
+					<span slot="title"><el-badge class="menu-badge-item" is-dot :hidden="hide_dot">下载任务</el-badge></span>
 				</el-menu-item>
 			</el-menu>
 		</el-main>

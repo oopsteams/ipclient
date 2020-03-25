@@ -1,56 +1,25 @@
 <template>
 	<div>
 		<selfCarousel></selfCarousel>
-		<el-pagination
-			background
-			@current-change="handleCurrentChange"
-			layout="prev, pager, next"
-			:current-page.sync="currentPage"
-			:page-size="pageSize"
-			:total="total">
-		</el-pagination>
-		<el-table
-		      :data="tableData"
-		      style="width: 100%">
-			<el-table-column
-		        prop="date"
-		        label="日期"
-		        width="180">
-			</el-table-column>
-			<el-table-column
-		        prop="name"
-		        label="资源名称">
-			</el-table-column>
-			<el-table-column
-		        prop="size"
-		        label="大小"
-				width="180"
-				>
-			</el-table-column>
-			<el-table-column
-			    prop="no"
-			    label="编码"
-				width="180"
-				>
-			</el-table-column>
-		</el-table>
-		<el-pagination
-			background
-			@current-change="handleCurrentChange"
-			layout="prev, pager, next"
-			:current-page.sync="currentPage"
-			:page-size="pageSize"
-			:total="total">
-		</el-pagination>
+		<selfProgress ref="prog"></selfProgress>
+		<!-- <mydialog ref="dialog">
+			<myvideo ref="selfvideo"></myvideo>
+		</mydialog> -->
 	</div>
 </template>
 
 <script>
+	import mydialog from '../components/videoDialog.vue'
+	import myvideo from '../components/video.vue'
+	import selfProgress from '../components/multiLvlProgressGroup.vue'
 	import selfCarousel from '../carousel.vue'
 	import funs from './download.js'
 	export default {
 		components:{
-			selfCarousel
+			selfCarousel,
+			selfProgress,
+			mydialog,
+			myvideo
 		},
 		data:funs.data,
 		methods: funs.methods,

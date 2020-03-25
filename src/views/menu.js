@@ -1,15 +1,18 @@
 const axios = require('axios');
 const utils = require('../utils.js');
+import avatar from '../assets/portrait.jpg';
 export default {
 	data(){
-		
 		return{
+			hide_dot:true,
 			popover_disabled:false,
 			login_witdh:'200px',
 			portrait:null,
+			portrait_url:avatar,
 			markname:'未登录',
 			show_cnt:0,
 			maxHeight:'600px',
+			currentRoute: 0,
 			menuItems:[{'r':'/'},{'r':'/ftree'},{'r':'/fetch'},{'r':'/download'}],
 			
 		}
@@ -17,6 +20,9 @@ export default {
 	methods:{
 		external(){
 			return this.$root.$children[0];
+		},
+		update_hide_dot(show){
+			this.hide_dot = show;
 		},
 		onshow(){
 			console.log("menu :",this.$refs);
@@ -42,56 +48,79 @@ export default {
 		// },
 		handleSelect(key, keyPath){
 			var self = this;
-			var item = self.menuItems[key-1];
+			if(self.currentRoute == key - 1){
+				return;
+			}
+			self.currentRoute = key - 1;
+			if(self.currentRoute == 3){
+				console.log("currentRoute:", self.currentRoute);
+				self.update_hide_dot(true);
+			}
+			var item = self.menuItems[self.currentRoute];
 			console.log('handleSelect:', key, keyPath);
 			self.$router.push({'path': item.r});
+			if(window._hmt){
+				// console.log('upload menu event!');
+				window._hmt.push(['_trackEvent', 'redirect', 'click', item.r, 1]);
+			}
 		}
 	},
 	mounted(){
 		var self = this;
-		self.external().check_st(utils.STATE.START, (v, ex_params)=>{
+		self.external().check_st('menu', utils.STATE.START, (v, ex_params)=>{
 			console.log("menu st val:", v, ",ex_params:", ex_params);
-			// if(ex_params && ex_params.lg_rs){
-			// 	console.log('user:', ex_params.user);
-			// 	self.portrait = ex_params.user.portrait;
-			// 	self.markname = ex_params.user.username;
-			// 	self.login_witdh = '200px';
-			// 	console.log('user:', ex_params.user);
-			// 	self.$refs.login.change_login_ui(false);
-			// } else {
-			// 	self.$refs.login.change_login_ui(true);
-			// 	this.portrait = null;
-			// 	this.markname = '未登录';
-			// 	self.login_witdh = '360px';
-			// }
 			window.global_context.addListener('login',function(params){
-				console.log("login params:", params);
+				// console.log("login params:", params);
 				if(params && params.logined){
 					self.external().ex_params = params;
-					self.portrait = params.portrait;
+					if(params.portrait && params.portrait.indexOf('null')<0){
+						// console.log('portrait:', params.portrait);
+						self.portrait = params.portrait;
+						// self.portrait_url = 'https://himg.bdimg.com/sys/portrait/item/'+params.portrait+'.jpg'
+						self.portrait_url = 'https://himg.bdimg.com/sys/portrait/item/'+self.portrait;
+					} else {
+						self.portrait_url = avatar;
+					}
 					self.markname = params.username;
 					self.login_witdh = '200px';
 					self.$refs.login.change_login_ui(false);
+					if(window._hmt){
+						// console.log('upload login event!');
+						//params['id']
+						window._hmt.push(['_trackEvent', 'login', 'click', 'success', 1]);
+					}
 				} else {
 					self.$refs.login.change_login_ui(true);
-					self.portrait = null;
+					self.portrait_url = avatar;
 					self.markname = '未登录';
-					self.login_witdh = '360px';
+					// self.login_witdh = '360px';
+					self.login_witdh = '200px';//only baidu login
 					self.external().ex_params["logined"] = false;
+					if(window._hmt){
+						// console.log('upload login event!');
+						//params['id']
+						window._hmt.push(['_trackEvent', 'login', 'click', 'fail', 1]);
+					}
 				}
 			});
 			window.global_context.addListener('logout',function(params){
 				self.$nextTick(()=>{
 					self.popover_disabled = false;
 					self.$refs.login.change_login_ui(true);
-					self.portrait = null;
+					self.portrait_url = avatar;
 					self.markname = '未登录';
-					self.login_witdh = '360px';
+					// self.login_witdh = '360px';
+					self.login_witdh = '200px';//only baidu login
+					if(window._hmt){
+						// console.log('upload login event!');
+						//params['id']
+						window._hmt.push(['_trackEvent', 'login', 'click', 'logout', 1]);
+					}
 				});
 			});
 		});
 		// console.log("menu self root:", self.external());
-		self.external().bind_height_listener((h)=>{
+		self.external().bind_height_listener('menu',(h)=>{
 			self.maxHeight = h + 'px';
 		});
 		var orderHight = document.documentElement.clientHeight;

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "webpack-dev-server --inline --hot --env.dev",
     "build": "rimraf dist && webpack -p --progress --hide-modules",
+	"build_prod": "rimraf dist/prod && webpack --config webpack.prod.conf.js -p --progress --hide-modules",
     "build_dev": "webpack -p --progress --hide-modules"
   },
   "dependencies": {

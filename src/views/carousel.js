@@ -1,4 +1,5 @@
 const axios = require('axios');
+const utils = require('../utils.js');
 export default {
 	data(){
 		  return {
@@ -8,7 +9,7 @@ export default {
 		  }
 	},
 	methods:{
-		external(){
+		app(){
 			return this.$root.$children[0];
 		},
 		handleClick(id){
@@ -16,8 +17,8 @@ export default {
 		load_cards(){
 			var self = this;
 			var load_datas = ()=>{
-				var point = 'http://localhost:8080';
-				axios.get(point+'/open/loops').then((res)=>{
+				var point = window.global_context.point;
+				axios.get(point+'open/loops').then((res)=>{
 					if(res.data && res.data.hasOwnProperty('sources')){
 						var _fr = res.data.fr;
 						if(_fr>0){
@@ -26,7 +27,7 @@ export default {
 						var sources = res.data.sources;
 						for(var i=0;i<sources.length;i++){
 							var item = sources[i];
-							var pos_item = {src: point+item.srcurl, type:item.type, id:item.id, idx:item.idx}
+							var pos_item = {src: utils.join(point,item.srcurl), type:item.type, id:item.id, idx:item.idx}
 							self.$set(self.items, i, pos_item);
 						}
 					}
@@ -39,12 +40,14 @@ export default {
 	},
 	mounted(){
 		var self = this;
-		self.external().register('carousel');
-		self.external().bind_height_listener((h)=>{
+		self.app().register('carousel');
+		self.app().bind_height_listener('carousel', (h)=>{
 			var h = Math.round(h/3);
 			if(h<240){h=240;}
 			self.carouselHeight = h + 'px';
 		});
-		self.load_cards();
+		self.app().check_st('carousel', utils.STATE.START, (v)=>{
+			self.load_cards();
+		});
 	}
 }

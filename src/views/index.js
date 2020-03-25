@@ -48,36 +48,39 @@ export default {
 		},
 		open_alert(msg, iserr, _t, txt){
 			var self = this;
-			var _msg = msg;
-			var use_html = false;
-			if(this.qr){
-				var img_src = window.global_context.point + this.qr;
-				if(this.qr.substring(0,1)==='/'){
-					img_src = window.global_context.point + this.qr.substring(1);
-				}
-				_msg = '<span class="common-font">'+msg+'</span><br><span>联系方式:</span><br><span><img width="256px" height="256px" src="'+img_src+'"/></span>';
-				use_html = true;
-			}
-			var re_copy_msg = false;
-			
-			if(!_t){
-				_t = '请复制信息';
-				re_copy_msg = true;
-			}
-			self.doCopy(txt);
-			this.$alert(_msg, iserr?'注意':_t, 
-			{
-				dangerouslyUseHTMLString:use_html,
-				confirmButtonText: '复制',
-				callback: action => {
-			            this.$message({
-			              type: 'info',
-			              message: `注意: 禁止随意传播!`
-			            });
-						//if(re_copy_msg){self.doCopy(txt);}
-						self.doCopy(txt);
-			          }
+			self.external().open_alert(msg, iserr, _t, ()=>{
+				self.doCopy(txt);
 			});
+			// var _msg = msg;
+			// var use_html = false;
+			// if(this.qr){
+			// 	var img_src = window.global_context.point + this.qr;
+			// 	if(this.qr.substring(0,1)==='/'){
+			// 		img_src = window.global_context.point + this.qr.substring(1);
+			// 	}
+			// 	_msg = '<span class="common-font">'+msg+'</span><br><span>联系方式:</span><br><span><img width="256px" height="256px" src="'+img_src+'"/></span>';
+			// 	use_html = true;
+			// }
+			// var re_copy_msg = false;
+			
+			// if(!_t){
+			// 	_t = '请复制信息';
+			// 	re_copy_msg = true;
+			// }
+			// self.doCopy(txt);
+			// this.$alert(_msg, iserr?'注意':_t, 
+			// {
+			// 	dangerouslyUseHTMLString:use_html,
+			// 	confirmButtonText: '复制',
+			// 	callback: action => {
+			//             this.$message({
+			//               type: 'info',
+			//               message: `注意: 禁止随意传播!`
+			//             });
+			// 			//if(re_copy_msg){self.doCopy(txt);}
+			// 			self.doCopy(txt);
+			//           }
+			// });
 		},
 		showcontact(item){
 			var self = this;

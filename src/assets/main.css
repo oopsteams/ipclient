@@ -80,6 +80,19 @@ body{
 .el-main{
 	padding:0;
 }
+.login_container{
+	display:-webkit-flex;
+	display: flex;
+	flex-direction: row;
+}
+.separate_right_box{
+	background-image:url('./img/a4l.png');
+	background-repeat: no-repeat;
+	margin-left: auto;
+	margin-right: 40px;
+	padding-left: 10px;
+	align-self:flex-end;
+}
 .my-header{
 	height: 2.5rem;
 	line-height: 2.5rem;
@@ -119,6 +132,16 @@ body{
 	margin-left: 0;
 	vertical-align: middle;
 }
+.my-header-info{
+	font-size: 0.5625rem;
+	color: #FF0000;
+	height: 2rem;
+	position: relative;
+	vertical-align: middle;
+	float: right;
+	padding-right: 0.625rem;
+	pointer-events:auto;
+}
 .my-menu-body{
 	display:-webkit-flex;
 	display: flex;
@@ -134,6 +157,21 @@ body{
 	margin-left: 0;
 	align-self: flex-start;
 }
+.menu-badge-item{
+	line-height: normal;
+}
+.progress_header{
+	width: 100%;
+	display:-webkit-flex;
+	display: flex;
+	flex-direction: row;
+}
+.progress_header_title{
+	width:160px;
+	text-overflow:ellipsis;
+	overflow:hidden;
+	white-space:nowrap;
+}
 .foot_box{
 	display: -webkit-flex;
 	display: flex;
@@ -141,14 +179,6 @@ body{
 }
 .separate_left_box{
 	align-self:flex-start
-}
-.separate_right_box{
-	background-image:url('./img/a4l.png');
-	background-repeat: no-repeat;
-	margin-left: auto;
-	margin-right: 40px;
-	padding-left: 10px;
-	align-self:flex-end;
 }
 .portrait{
 	border-radius:50%;

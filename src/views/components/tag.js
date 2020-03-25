@@ -27,6 +27,11 @@ export default {
 			if(tag){
 				tagname  = tag.r;
 			}
+			var p = self.external();
+			if(!p || !p.$refs || !p.$refs.searchinput){
+				if(cb)cb(false);
+				return;
+			}
 			var keyword = self.external().$refs.searchinput.$refs.sinput.$refs.input.value;
 			
 			var source_val = self.external().$refs.searchinput.$refs.soptions.value
@@ -96,6 +101,14 @@ export default {
 				console.log('res:', res);
 				if(res.data){
 					self.external().qr = res.data.contact;
+					if(window.global_context){
+						if(res.data.contact){
+							window.global_context.qr = res.data.contact;
+						}
+						if(res.data.auth){
+							window.global_context.bdauth = res.data.auth;
+						}
+					}
 					let data_list = res.data.data;
 					for(var i=0;i<data_list.length;i++){
 						var tag_obj = data_list[i];
@@ -117,11 +130,15 @@ export default {
 			});
 		};
 		// console.log('app:', self.app());
-		self.app().check_st(utils.STATE.START, (v)=>{
-			console.log("st val:", v);
+		self.app().check_st('tag', utils.STATE.START, (v)=>{
+			console.log("tag START global_context:", window.global_context);
 			self.app().load_start();
 			load_datas(()=>{
 				self.app().load_end();
+				if(window._hmt){
+					console.log('will send init event!!!!');
+					window._hmt.push(['_trackEvent', 'init', 'click', window.global_context.version, 1]);
+				}
 			});
 		});
 		// this.$nextTick(function () {

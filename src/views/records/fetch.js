@@ -51,7 +51,7 @@ export default {
 	},
 	mounted(){
 		var self = this;
-		self.app().check_st(utils.STATE.START, (v, ex_params)=>{
+		self.app().check_st('fetch', utils.STATE.START, (v, ex_params)=>{
 			if(ex_params.logined){
 				self.load_datas();
 			} else {

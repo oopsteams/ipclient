@@ -3,55 +3,54 @@ const utils = require('../../utils.js');
 export default {
 	data(){
 		return {
-		        currentPage:1,
-		        pageSize:15,
-		        total:0,
-				tableData:[]
-		      };
+			check_state: true,
+			check_state_sync: true,
+			currentPage:1,
+			pageSize:15,
+			total:0,
+			tasks:[]
+		};
 	},
 	methods:{
 		app(){
 			return this.$root.$children[0];
 		},
-		load_datas(){
+		heart_call(){
+			if(this.check_state && this.check_state_sync){
+				this.check_state_sync = false;
+				
+			}
+			if(window.global_context){
+				window.global_context.send({'tag':'download',"cmd": "checkstate", 'data':{}});
+			}
+		},
+		init_ui(){
 			var self = this;
-			var pg = self.currentPage - 1;
-			if(pg<0)pg=0;
-			var params={page:pg, total: self.total};
-			var load_items = ()=>{
-				var point = window.global_context.point;
-				var tk = window.global_context.user.tk;
-				axios.get(point+'product/assets?tk='+tk,{params:params}).then((res)=>{
-					console.log('res:', res);
-					if(res.data){
-						console.log('data:',res.data);
-						self.tableData = [];
-						res.data.data.forEach((d, idx)=>{
-							var item = {
-								name: d.desc,
-								date: d.created_at,
-								size: d.format_size,
-								no:d.pro_no,
-								raw:d
-							  }
-							 // console.log('item:', item);
-							self.$set(self.tableData,idx,item);
-						});
-						self.total = res.data.total;
-						self.pageSize = res.data.pagesize;
+			window.global_context.addListener('download',function(args){
+				var cmd = args.cmd;
+				if(self.$refs && self.$refs.prog){
+					if("init" == cmd){
+						var datas = args.datas;
+						self.$refs.prog.set_tasks(datas);
+						
+					}else if("checkstate" == cmd){
+						var datas = args.datas;
+						self.$refs.prog.update_tasks(datas);
 					}
-				},()=>{
-					console.log('请求失败!');
-				});
-			};
-			load_items();
+				}
+				// console.log('download args:', args);
+			}, false);
+			window.global_context.send({'tag':'download',"cmd": "init", 'data':{}});
 		}
 	},
 	mounted(){
 		var self = this;
-		self.app().check_st(utils.STATE.START, (v, ex_params)=>{
+		self.app().bind_heart_listener('download', ()=>{
+			self.heart_call();
+		});
+		self.app().check_st('download', utils.STATE.START, (v, ex_params)=>{
 			if(ex_params.logined){
-				self.load_datas();
+				self.init_ui();
 			} else {
 				self.$message({
 				  type: 'info',

@@ -20,17 +20,30 @@
 				</div> -->
 			</div>
 		</div>
+		<mydialog ref="dialog">
+			<div>
+				<el-steps :space="200" :active="stepActive" finish-status="success" align-center>
+				  <el-step title="文件迁出" :icon="stepIcons[0]"></el-step>
+				  <el-step title="构建目录" :icon="stepIcons[1]"></el-step>
+				  <el-step title="文件迁入" :icon="stepIcons[2]"></el-step>
+				  <el-step title="信息同步" :icon="stepIcons[3]"></el-step>
+				  <el-step title="创建任务" :icon="stepIcons[4]"></el-step>
+				</el-steps>
+			</div>
+		</mydialog>
 	</div>
 </template>
 
 <script>
+	import mydialog from './components/notiDialog.vue'
 	import selfBanner from './banner.vue'
 	import selfVideo from './components/video.vue'
 	import funs from './ftree.js'
 	export default {
 		components:{
 			selfBanner,
-			selfVideo
+			selfVideo,
+			mydialog
 		},
 		data:funs.data,
 		methods: funs.methods,
