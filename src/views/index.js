@@ -17,6 +17,22 @@ export default {
 		external(){
 			return this.$root.$children[0];
 		},
+		bind_listener(){
+			var self = this;
+			var redraw = ()=>{
+				self.redraw_table_data();
+			}
+			window.global_context.addListener('login',function(params){
+				redraw();
+			},false);
+			window.global_context.addListener('logout',function(params){
+				redraw();
+			},false);
+		},
+		redraw_table_data(){
+			var self = this;
+			self.user_id = window.global_context.user.id;
+		},
 		reset_base_vars(){
 			var self = this;
 			self.currentPage = 1;
@@ -24,11 +40,7 @@ export default {
 			self.user_id = window.global_context.user.id;
 		},
 		doCopy(msg){
-			this.$copyText(msg).then(function (e) {
-				
-			}, function (e) {
-				
-			})
+			this.$copyText(msg).then(function (e) {}, function (e) {})
 		},
 		click_sub_dir(event){
 			var self = this;
@@ -51,36 +63,6 @@ export default {
 			self.external().open_alert(msg, iserr, _t, ()=>{
 				self.doCopy(txt);
 			});
-			// var _msg = msg;
-			// var use_html = false;
-			// if(this.qr){
-			// 	var img_src = window.global_context.point + this.qr;
-			// 	if(this.qr.substring(0,1)==='/'){
-			// 		img_src = window.global_context.point + this.qr.substring(1);
-			// 	}
-			// 	_msg = '<span class="common-font">'+msg+'</span><br><span>联系方式:</span><br><span><img width="256px" height="256px" src="'+img_src+'"/></span>';
-			// 	use_html = true;
-			// }
-			// var re_copy_msg = false;
-			
-			// if(!_t){
-			// 	_t = '请复制信息';
-			// 	re_copy_msg = true;
-			// }
-			// self.doCopy(txt);
-			// this.$alert(_msg, iserr?'注意':_t, 
-			// {
-			// 	dangerouslyUseHTMLString:use_html,
-			// 	confirmButtonText: '复制',
-			// 	callback: action => {
-			//             this.$message({
-			//               type: 'info',
-			//               message: `注意: 禁止随意传播!`
-			//             });
-			// 			//if(re_copy_msg){self.doCopy(txt);}
-			// 			self.doCopy(txt);
-			//           }
-			// });
 		},
 		showcontact(item){
 			var self = this;
@@ -116,5 +98,8 @@ export default {
 	mounted(){
 		var self = this;
 		self.external().register('index');
+		self.external().check_st('index', utils.STATE.START, (v, ex_params)=>{
+			self.bind_listener();
+		});
 	}
 }

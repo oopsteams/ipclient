@@ -6,6 +6,9 @@ import avatar from '../assets/img/iso.png';
 export default {
 	data(){
 		return {
+			check_transfer_state: false,
+			check_transfer_state_sync: true,
+			show_shared_btn:true,
 			check_state:false,
 			check_state_sync:true,
 			check_state_data:null,
@@ -19,7 +22,10 @@ export default {
 			fileName:null,
 			cData:null,
 			cNode:null,
-			maxHeight:'300px'
+			path_tags:[],
+			maxHeight:'300px',
+			build_download_task:true,
+			delay_count: 0
 		}
 	},
 	methods:{
@@ -33,11 +39,54 @@ export default {
 		},
 		heart_call(){
 			var self = this;
-			// console.log('heart in. sub call.', Date.now());
+			const max_delay = 2;
+			if(self.delay_count >= max_delay){
+				self.delay_count = 0;
+			} else {
+				self.delay_count += 1;
+				return;
+			}
+			// console.log('heart in. sub call.', Date.now(), ',check_transfer_state:',this.check_transfer_state);
 			if(this.check_state && this.check_state_sync && this.check_state_data){
 				this.check_state_sync = false;
 				window.global_context.send({'tag':'file',"cmd": "checkstate", 'data':this.check_state_data});
+			} else if(this.check_transfer_state && this.check_transfer_state_sync && this.check_state_data){
+				this.check_transfer_state_sync = false;
+				window.global_context.send({'tag':'file',"cmd": "transfercheckstate", 'data':this.check_state_data});
 			}
+		},
+		update_transfer_state(data){
+			var self = this;
+			var state = data.state;
+			var item = data['item'];
+			console.log('update_transfer_state data:', data);
+			if(state < 0){
+				self.app().load_end();
+				var err = data.err;
+				self.check_transfer_state = false;
+				self.check_transfer_state_sync=true;
+				setTimeout(()=>{
+					self.$refs.dialog.close();
+					self.$notify({
+					  title: '异常',
+					  duration:0,
+					  showClose:true,
+					  message: err
+					});
+				},800);
+			} else {
+				var pos = data.pos;
+				if(pos == 1){
+					// self.app().load_end();
+					self.check_transfer_state = false;
+					if(item && item.hasOwnProperty('link') && item.hasOwnProperty('pass')){
+						var data = {'shared': item, 'node':this.check_state_data}
+						window.global_context.send({'tag':'file',"cmd": "opensharewin", 'data':data});
+					}
+				}
+				console.log('update_transfer_state item:', item, ',pos:', pos);
+			}
+			self.check_transfer_state_sync=true;
 		},
 		update_step(data){
 			var self = this;
@@ -101,11 +150,18 @@ export default {
 			
 			self.check_state_sync = true;
 		},
-		download(e, item){
+		transfer(e, item){
 			var self = this;
-			console.log("download:",e);
-			console.log("download data:",item);
-			console.log("download node:",self.cNode);
+			self.build_download_task = false;
+			if(this.check_state){
+				self.$notify({
+				  title: '异常',
+				  duration:4000,
+				  showClose:false,
+				  message: '任务冲突!'
+				});
+				return;
+			}
 			if(self.cNode){
 				var inst = $.jstree.reference('#tree');
 				var parents = self.cNode.parents;
@@ -119,7 +175,34 @@ export default {
 						tag = pn.data.tag;
 						break;
 					}
-					console.log("i:",i,",pn:", pn);
+					// console.log("i:",i,",pn:", pn);
+				}
+				var params = {'id':self.cData.id, 'fs_id':self.cData.fs_id,'tag':tag,'pids':pids.join(',')};
+				self.app().load_start();
+				var cmd = "transfer";
+				window.global_context.send({'tag':'file',"data": params,"cmd": cmd,"id":params.id});
+			}
+		},
+		download(e, item){
+			var self = this;
+			self.build_download_task = true;
+			// console.log("download:",e);
+			// console.log("download data:",item);
+			// console.log("download node:",self.cNode);
+			if(self.cNode){
+				var inst = $.jstree.reference('#tree');
+				var parents = self.cNode.parents;
+				var tag = '';
+				var pids = [];
+				for(var i=0;i<parents.length;i++){
+					if('#' == parents[i])break;
+					var pn = inst.get_node(parents[i]);
+					pids.push(pn.data._id);
+					if(pn.data.tag){
+						tag = pn.data.tag;
+						break;
+					}
+					// console.log("i:",i,",pn:", pn);
 				}
 				// cmd = "copy";
 				var params = {'id':self.cData.id, 'fs_id':self.cData.fs_id,'tag':tag,'pids':pids.join(',')};
@@ -149,6 +232,7 @@ export default {
 				// 	}, 3000);
 				// };
 				// testActive(0)
+				
 				var cmd = "download";
 				window.global_context.send({'tag':'file',"data": params,"cmd": cmd,"id":params.id});
 			}
@@ -245,8 +329,18 @@ export default {
 					if (data.node.data.isdir == 0) {
 						// waiting_replay['file'] = data.node.id;
 						self.stepActive = 0;
-						console.log("jstree data:", data);
+						// console.log("jstree data:", data);
 						self.cNode = data.node;
+						var parents = self.cNode.parents;
+						self.path_tags = [];
+						var inst = $.jstree.reference('#tree');
+						for(var i=parents.length;i>0;i--){
+							var pn = inst.get_node(parents[i-1]);
+							self.path_tags.push(pn.text);
+						}
+						
+						self.show_shared_btn = self.cNode.data.source != 'self';
+						
 						self.cData = {'id': data.node.data._id, 
 						'filename':data.node.text, 'category':data.node.data.category, 
 						'format_size':data.node.data.format_size,
@@ -254,7 +348,8 @@ export default {
 						};
 						self.check_state_data = {
 							'id': data.node.data._id,
-							"fs_id": data.node.data.fs_id
+							"fs_id": data.node.data.fs_id,
+							'filename':data.node.text
 						}
 						// self.app().load_start();
 						// window.global_context.send({'tag':'file',"data": data.node.data, 
@@ -354,6 +449,18 @@ export default {
 					self.update_step(data);
 				} else if("download_ready" == cmd){
 					
+				} else if("transfer" == cmd){
+					var data = args.data;
+					self.update_transfer_state(data);
+					self.check_transfer_state = true;
+					self.check_transfer_state_sync=true;
+				} else if("transfer_state" == cmd){
+					var data = args.data;
+					console.log('transfer_state data:', data);
+					self.update_transfer_state(data);
+				} else if("opensharewinok" == cmd){
+					console.log('opensharewinok will close alert!');
+					self.app().load_end();
 				}
 			}, false);
 			// jq(function(){

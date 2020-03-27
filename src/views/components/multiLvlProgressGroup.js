@@ -128,12 +128,12 @@ export default {
 					});
 				}
 			}
-			console.log('ori_tasks:', ori_tasks);
+			// console.log('ori_tasks:', ori_tasks);
 			// this.tasks = ori_tasks;
 		},
 		set_tasks(_tasks){
 			var self = this;
-			console.log('_tasks:', _tasks);
+			// console.log('_tasks:', _tasks);
 			var task_list = [];
 			for(var i=0;i<_tasks.length;i++){
 				var p = _tasks[i];
@@ -159,7 +159,7 @@ export default {
 					'speed': p.speed
 				});
 			}
-			console.log('set_tasks task_list:',task_list);
+			// console.log('set_tasks task_list:',task_list);
 			this.tasks = task_list;
 		},
 		deal_task(task){
@@ -167,13 +167,13 @@ export default {
 			var st = task.state;
 			if(st == 0 || st == 3){
 				var rs = self.app().send({'tag':'prog', 'id': task.id, 'data': task, 'cmd':'resume'})
-				console.log('deal_task rs:', rs);
+				// console.log('deal_task rs:', rs);
 			} else if(st == 1){
 				var rs = self.app().send({'tag':'prog', 'id': task.id, 'data': task, 'cmd':'pause'})
-				console.log('deal_task rs:', rs);
+				// console.log('deal_task rs:', rs);
 			} else if(st == 2){
 				var rs = self.app().send({'tag':'prog', 'id': task.id, 'data': task, 'cmd':'move'})
-				console.log('deal_task rs:', rs);
+				// console.log('deal_task rs:', rs);
 			}
 			task['diable'] = true;
 		},

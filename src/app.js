@@ -196,6 +196,7 @@ export default {
 		},
 		check_global_context:function(){
 			var self = this;
+			self.load_start();
 			function check_modules_inited(){
 				for(var i=0;i<self.modules.length;i++){
 					var m = self.modules[i];
@@ -207,6 +208,7 @@ export default {
 			}
 			function __check__(){
 				if(window.global_context && window.global_context.addListener){
+					self.load_end();
 					utils.looper.addListener('heart', (ctx)=>{
 						self.heart_call();
 					}, {});
@@ -250,7 +252,7 @@ export default {
 						}
 					}, false);
 				} else {
-					setTimeout(__check__, 100);
+					setTimeout(__check__, 300);
 				}
 			}
 			__check__();

@@ -20,7 +20,10 @@
 			  </table>
 		  </lg>
 		</el-popover>
-		<el-header class="my-menu-header" height="3rem">&nbsp;</el-header>
+		<el-header :class="header_css" height="3rem">
+			<control_btn v-if="platform != 'darwin'" ref="control_btn"></control_btn>
+			<span v-else>&nbsp;</span>
+		</el-header>
 		<el-main>
 			<el-menu
 			      default-active="1"
@@ -63,9 +66,11 @@
 <script>
 import lg from './components/login.vue'
 import funs from './menu.js'
+import control_btn from './components/controlbtn.vue'
 export default {
 	components:{
-		lg
+		lg,
+		control_btn
 	},
 	data:funs.data,
 	methods: funs.methods,

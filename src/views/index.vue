@@ -8,7 +8,7 @@
 			<searchInput ref="searchinput"></searchInput>
 			<el-tag v-if="sub_dir.length>0" @close="clear_sub_dir" closable type="success">{{sub_dir}}</el-tag>
 		</el-header>
-		<el-main style="text-align: left;">
+		<el-main style="text-align: left;" :key="user_id">
 			<el-pagination
 						  background
 									@current-change="handleCurrentChange"
@@ -17,7 +17,7 @@
 									:page-size="pageSize"
 						  :total="total">
 						</el-pagination>
-			<el-table :data="tableData" stripe>
+			<el-table :data="tableData" stripe >
 				<el-table-column prop="source" label="来源" width="110">
 				</el-table-column>
 				<el-table-column label="位置">

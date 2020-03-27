@@ -5,6 +5,7 @@ export default {
 	data(){
 		return{
 			hide_dot:true,
+			header_css: 'my-menu-header-win',
 			popover_disabled:false,
 			login_witdh:'200px',
 			portrait:null,
@@ -14,7 +15,7 @@ export default {
 			maxHeight:'600px',
 			currentRoute: 0,
 			menuItems:[{'r':'/'},{'r':'/ftree'},{'r':'/fetch'},{'r':'/download'}],
-			
+			platform:'darwin'
 		}
 	},
 	methods:{
@@ -63,12 +64,23 @@ export default {
 				// console.log('upload menu event!');
 				window._hmt.push(['_trackEvent', 'redirect', 'click', item.r, 1]);
 			}
+		},
+		init_ui(){
+			if(window.global_context){
+				var os = window.global_context.os;
+				console.log('os:', os);
+				this.platform = os.platform;
+				if(this.platform == 'darwin'){
+					this.header_css = 'my-menu-header';
+				}
+			}
 		}
 	},
 	mounted(){
 		var self = this;
 		self.external().check_st('menu', utils.STATE.START, (v, ex_params)=>{
 			console.log("menu st val:", v, ",ex_params:", ex_params);
+			self.init_ui();
 			window.global_context.addListener('login',function(params){
 				// console.log("login params:", params);
 				if(params && params.logined){

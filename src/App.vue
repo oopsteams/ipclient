@@ -10,7 +10,7 @@
 			<span class="my-header-info" v-if="header_current_msg != null">
 				<span>{{header_current_msg.msg}}</span>
 				<span v-if="header_current_msg.type != null">
-					<el-button size="mini" v-if="header_current_msg.type == 'a'" @click="app_upgrade(header_current_msg)" icon="el-icon-download"></el-button>
+					<el-button size="minismall" v-if="header_current_msg.type == 'a'" @click="app_upgrade(header_current_msg)" icon="el-icon-download"></el-button>
 				</span>
 			</span>
 		</el-header>
