@@ -5,12 +5,14 @@
 			<div id="tree" :style="{'min-height':maxHeight, 'height':maxHeight}"></div>
 			<div id="desc" :style="{'min-height':maxHeight}">
 				<el-card :body-style="{ padding: '0px', 'min-width':'240px' }">
-				      <img :src="thumb" class="image">
+				      <img :src="thumb" class="image"/>
+					  <span v-if="extname != null" class="extname">{{extname}}</span>
 				      <div style="padding: 14px;">
 				        <span>{{fileName}}</span>
 				        <div class="bottom clearfix">
 							<label class="left_button">{{formatSize}}</label>
 				          <!-- <el-button class="left_button" type="primary" :icon="btnIcon" @click="play"></el-button> -->
+						  <span class="button"><el-button v-if="show_preview_btn && cData != null" style="margin: 0 0.625rem;padding: 0;" title="预览" type="primary" @click="preview($event, cData)" icon="el-icon-view"></el-button></span>
 						  <span class="button"><el-button v-if="show_shared_btn && cData != null" style="margin: 0 0.625rem;padding: 0;" title="转存" type="primary" @click="transfer($event, cData)" icon="el-icon-upload"></el-button></span>
 						  <el-button v-if="cData != null" class="button" title="下载" type="primary" @click="download($event, cData)" :icon="downloadBtnIcon"></el-button>
 				        </div>

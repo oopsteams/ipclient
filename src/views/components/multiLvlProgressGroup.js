@@ -1,7 +1,11 @@
 const utils = require('../../utils.js');
+import avatar from '../../assets/img/empty_icon.png';
 export default {
 	data(){
 		return {
+			image_src: avatar,
+			audio_src:null,
+			audio_type:null,
 			onClose:null,
 			title:"注意",
 			outerVisible: false,
@@ -17,8 +21,12 @@ export default {
 			var p = params;
 			var t = p.task;
 			
-			if(state == 2 && p.file_url && t.type && t.type.match(/mp4|mp3/)){
-				iconv = 'el-icon-caret-right';
+			if(state == 2 && p.file_url && t.type){
+				if(t.type.match(/mp4|audio/i)){
+					iconv = 'el-icon-caret-right';
+				} else if(t.type.match(/pdf|jpg|jpeg|png|gif|bmp/i)){
+					iconv = 'el-icon-view';
+				}
 			}
 			return iconv;
 		},
@@ -205,16 +213,49 @@ export default {
 			// 		}
 			// 	}
 			// }
-			
-			self.app().send({'tag':'prog', 'id': task.id, 'data': task, 'cmd':'play'})
+			if(task.type.match(/mp4/i)){
+				self.app().send({'tag':'prog', 'id': task.id, 'data': task, 'cmd':'play'})
+			} else if(task.type.match(/pdf/i)){
+				self.app().send({'tag':'prog', 'id': task.id, 'data': task, 'cmd':'view'})
+			} else if(task.type.match(/audio/i)){
+				if(task.file_url){
+					self.audio_src = task.file_url;
+					self.audio_type = task.type;
+					self.$refs.audiodialog.updateTitle("音频");
+					self.$refs.audiodialog.updateShowClose(true);
+					self.$refs.audiodialog.setOnClose(()=>{
+						var audio = document.getElementById('myaudio');
+						window.audio = audio;
+						// console.log('audio:', audio);
+						// console.log('dialog closed, need stop audio.');
+						audio.pause();
+					});
+					self.$refs.audiodialog.open();
+				}
+			} else if(task.type.match(/jpg|jpeg|png|gif|bmp/i)){
+				if(task.file_url){
+					self.image_src = task.file_url;
+					self.$refs.dialog.updateTitle("预览(Esc退出)");
+					self.$refs.dialog.updateCloseOnPressEsc(true);
+					self.$refs.dialog.updateIsfullscreen(true);
+					// self.$refs.audiodialog.updateShowClose(true);
+					self.$refs.dialog.open();
+				}
+			} else {
+				// console.log("task:", task);
+			}
+			// self.app().send({'tag':'prog', 'id': task.id, 'data': task, 'cmd':'play'})
 			event.stopPropagation();
 		},
 		ass_task_btn_handle(event, task){
-			console.log('ass_task_btn_handle event:', event, ',task:', task);
+			// console.log('ass_task_btn_handle event:', event, ',task:', task);
 			var self = this;
 			var st = task.state;
 			if(st == 0 || st == 2 || st == 3 || st == 9){
-				var rs = self.app().send({'tag':'prog', 'id': task.id, 'data': task, 'cmd':'del'})
+				var deal = confirm("确认删除？");
+				if(deal){
+					var rs = self.app().send({'tag':'prog', 'id': task.id, 'data': task, 'cmd':'del'})
+				}
 			}
 			event.stopPropagation();
 		},
@@ -243,14 +284,10 @@ export default {
 	},
 	mounted(){
 		var self = this;
-		self.app().check_st('download', utils.STATE.START, (v, ex_params)=>{
+		self.app().check_st('mpg', utils.STATE.START, (v, ex_params)=>{
 			if(ex_params.logined){
 				self.init_ui();
 			} else {
-				self.$message({
-				  type: 'info',
-				  message: `注意: 请先登录验证!`
-				});
 			}
 		});
 	}

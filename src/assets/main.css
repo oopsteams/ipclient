@@ -3,7 +3,7 @@ body{
 	padding: 0 0;
 }
 #app, .container{
-  font-family: Helvetica, sans-serif;
+  font-family: SimSun;
   text-align: center;
   /* font-size: 1.6rem; */
 }
@@ -121,7 +121,7 @@ body{
 	line-height: 2.5rem;
 	position: absolute;
 	text-align: left;
-	z-index: 9999;
+	z-index: 2001;
 	top: 0px;
 	-webkit-app-region: drag;
 	pointer-events:none;
@@ -168,6 +168,7 @@ body{
 	vertical-align: middle;
 	float: right;
 	padding-right: 0.625rem;
+	-webkit-app-region: none;
 	pointer-events:auto;
 }
 .my-menu-body{
@@ -211,7 +212,11 @@ body{
 .portrait{
 	border-radius:50%;
 }
-
+.extname{
+	position: relative;
+	top:-7.5rem;
+	font-size: 1.25rem;
+}
 /*ftree*/
 .ftree-body{
 	font-size:10px;
@@ -244,7 +249,7 @@ body{
 }
 #tree { 
 	float:left; 
-	width:450px; 
+	width:400px; 
 	border-right:1px solid silver; 
 	overflow:auto; 
 	padding:0px 0;

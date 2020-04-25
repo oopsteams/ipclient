@@ -2,6 +2,9 @@ export default {
 	data(){
 		return {
 			showClose:false,
+			isfullscreen:false,
+			closeOnClickModal:false,
+			closeOnPressEsc:false,
 			onClose:null,
 			title:"注意",
 			outerVisible: false
@@ -19,6 +22,15 @@ export default {
 		},
 		updateShowClose(v){
 			this.showClose = v;
+		},
+		updateCloseOnClickModal(v){
+			this.closeOnClickModal = v;
+		},
+		updateCloseOnPressEsc(v){
+			this.closeOnPressEsc = v;
+		},
+		updateIsfullscreen(v){
+			this.isfullscreen = v;
 		},
 		updateTitle(t){
 			this.title = t;

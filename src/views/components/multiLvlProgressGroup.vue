@@ -35,13 +35,32 @@
 			</template>
 		  </el-collapse-item>
 		</el-collapse>
+		<mydialog ref="dialog">
+			<div style="width: 100%;height: 100%; overflow: auto;">
+				<div style="overflow: visible;">
+					<img :src="image_src" />
+				</div>
+			</div>
+		</mydialog>
+		<mydialog ref="audiodialog">
+			<div style="width: 100%;height: 100%; overflow: auto;">
+				<audio id="myaudio" controls>
+					<source :src="audio_src" :type="audio_type"></source>
+				</audio>
+			</div>
+		</mydialog>
+		
 	</div>
 	
 </template>
 
 <script>
+	import mydialog from './notiDialog.vue'
 	import funs from './multiLvlProgressGroup.js'
 	export default {
+		components:{
+			mydialog
+		},
 		data:funs.data,
 		methods: funs.methods,
 		mounted: funs.mounted

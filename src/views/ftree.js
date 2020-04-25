@@ -2,13 +2,17 @@ const axios = require('axios');
 const utils = require('../utils.js');
 const $ = require('jquery')
 const _ = require('jstree')
-import avatar from '../assets/img/iso.png';
+import avatar from '../assets/img/empty_icon.png';
+const step_timeout = 40000;
+// const step_timeout = 10000;
 export default {
 	data(){
 		return {
+			step_start_tm:0,
 			check_transfer_state: false,
 			check_transfer_state_sync: true,
 			show_shared_btn:true,
+			show_preview_btn:false,
 			check_state:false,
 			check_state_sync:true,
 			check_state_data:null,
@@ -19,6 +23,7 @@ export default {
 			downloadBtnIcon:'el-icon-download',
 			formatSize:'-K',
 			thumb:avatar,
+			extname: null,
 			fileName:null,
 			cData:null,
 			cNode:null,
@@ -39,6 +44,15 @@ export default {
 		},
 		heart_call(){
 			var self = this;
+			if(self.step_start_tm > 0){
+				if(Date.now() - self.step_start_tm > step_timeout){
+					if(self.$refs && self.$refs.dialog){
+						self.$refs.dialog.updateShowClose(true);
+						self.step_start_tm = 0;
+					}
+				}
+			}
+			//lower fr
 			const max_delay = 2;
 			if(self.delay_count >= max_delay){
 				self.delay_count = 0;
@@ -104,7 +118,9 @@ export default {
 				var err = data.err;
 				self.check_state = false;
 				setTimeout(()=>{
-					self.$refs.dialog.close();
+					if(self.$refs && self.$refs.dialog){
+						self.$refs.dialog.close();
+					}
 					self.$notify({
 					  title: '异常',
 					  duration:0,
@@ -150,6 +166,26 @@ export default {
 			
 			self.check_state_sync = true;
 		},
+		preview(e, item){
+			var self = this;
+			
+			var media_type = item.media_type;
+			console.log('media_type:', media_type);
+			if('image' == media_type){
+				self.app().load_start();
+				window.global_context.send({'tag':'file',"data": item,
+					"id": item.id,"cmd": "info",
+					"name": item.filename});
+			} else {
+				self.download(e, item, ()=>{
+					self.$message({
+					  type: 'info',
+					  message: `注意: 请留意下载列表,完成下载后即可查看!`
+					});
+				});
+				
+			}
+		},
 		transfer(e, item){
 			var self = this;
 			self.build_download_task = false;
@@ -183,7 +219,7 @@ export default {
 				window.global_context.send({'tag':'file',"data": params,"cmd": cmd,"id":params.id});
 			}
 		},
-		download(e, item){
+		download(e, item, callback){
 			var self = this;
 			self.build_download_task = true;
 			// console.log("download:",e);
@@ -213,7 +249,12 @@ export default {
 					self.check_state_sync=true;
 					self.stepActive = 0;
 					self.syncPos=0;
+					self.step_start_tm = 0;
+					if(callback){
+						callback();
+					}
 				});
+				self.step_start_tm = Date.now();
 				self.$refs.dialog.updateTitle("资源处理");
 				self.$refs.dialog.open();
 				// var max=5
@@ -239,6 +280,19 @@ export default {
 			// window.global_context.send({'tag':'file',"data": self.cData,
 			// 	"id": self.cData.id,"cmd": "download",
 			// 	"name": self.cData.filename});
+		},
+		call_service(query_path, params, callback){
+			var point = window.global_context.point;
+			var _call_ = function(){
+				axios.get(point+query_path, {params:params}).then((res)=>{
+					console.log('res:', res);
+					if(callback)callback(res);
+				},()=>{
+					console.log('请求失败!');
+					if(callback)callback(false);
+				});
+			};
+			_call_();
 		},
 		build_ftree(){
 			var self = this;
@@ -267,8 +321,12 @@ export default {
 									var v = json_dt.state;
 									f = json_dt.force;
 									if(v == -1){
-										console.log('will send ready command!');
-										// ipcRenderer.send('asynchronous-message', {"tag":"relogin"});
+										self.$message({
+										  type: 'info',
+										  message: `注意: 请重新登录验证!`
+										});
+										console.log('will send logout!');
+										window.global_context.send({'tag':'logout'});
 									}
 									dt={};
 								}
@@ -304,6 +362,54 @@ export default {
 						};
 						if(node.data.isdir === 0){
 							delete ctxmenu.sync;
+							if(node.data.source === 'self'){
+								ctxmenu.rm={
+									"separator_after"	: false,
+									"separator_before":false,
+									"label":"删除",
+									"action":(data)=>{
+										var inst = $.jstree.reference(data.reference), node = inst.get_node(data.reference);
+										self.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+										          confirmButtonText: '确定',
+										          cancelButtonText: '取消',
+										          type: 'warning'
+										        }).then(() => {
+										          self.app().load_start();
+										          let params = {
+										          			'tk': tk,
+										          			'id': node.data._id,
+										          			'source': node.data.source
+										          		};
+										          self.call_service('product/rm', params, (res)=>{
+										          	if(res.data){
+										          		var st = res.data.state;
+										          		var errmsg = '删除失败!';
+										          		if(st != 0){
+										          			if(res.data.errmsg){
+										          				errmsg = res.data.errmsg
+										          			}
+										          			self.$notify({
+										          			  title: '异常',
+										          			  duration:0,
+										          			  showClose:true,
+										          			  message: errmsg
+										          			});
+										          		}
+										          	}
+										          	inst.refresh(node);
+													self.app().load_end();
+										          });
+										        }).catch(() => {
+										          this.$message({
+										            type: 'info',
+										            message: '已取消删除'
+										          });          
+										        });
+										
+										//inst.refresh(node);
+									}
+								};
+							}
 						}
 						return ctxmenu;
 					}
@@ -326,24 +432,24 @@ export default {
 				  ]
 			}).on('changed.jstree', function(e, data){
 				if(data && data.selected && data.selected.length) {
+					var parents = data.node.parents;
+					self.path_tags = [];
+					var inst = $.jstree.reference('#tree');
+					for(var i=parents.length;i>0;i--){
+						var pn = inst.get_node(parents[i-1]);
+						self.path_tags.push(pn.text);
+					}
 					if (data.node.data.isdir == 0) {
 						// waiting_replay['file'] = data.node.id;
 						self.stepActive = 0;
 						// console.log("jstree data:", data);
 						self.cNode = data.node;
-						var parents = self.cNode.parents;
-						self.path_tags = [];
-						var inst = $.jstree.reference('#tree');
-						for(var i=parents.length;i>0;i--){
-							var pn = inst.get_node(parents[i-1]);
-							self.path_tags.push(pn.text);
-						}
-						
 						self.show_shared_btn = self.cNode.data.source != 'self';
-						
+						var media_type = data.node.data.media_type;
 						self.cData = {'id': data.node.data._id, 
 						'filename':data.node.text, 'category':data.node.data.category, 
 						'format_size':data.node.data.format_size,
+						'media_type':media_type,
 						"fs_id": data.node.data.fs_id
 						};
 						self.check_state_data = {
@@ -356,10 +462,35 @@ export default {
 						// 	"id": data.node.id,"cmd": "info",
 						// 	"name": data.node.text});
 						// var format_size = data.node.data;
+						var fn = self.cData.filename;
+						if(['image', 'plain'].indexOf(media_type)>=0){
+							self.show_preview_btn = true;
+							var fn_l = fn.length;
+							if(media_type == 'plain' && fn.toLowerCase().substring(fn_l-3) != 'pdf'){
+								self.show_preview_btn = false;
+							}
+						} else {
+							self.show_preview_btn = false;
+						}
+						console.log('media_type:', media_type);
+						
+						var reverse_fn = fn.split('').reverse().join('');
+						// console.log('reverse_fn:', reverse_fn);
+						var idx = reverse_fn.indexOf('.');
+						if(idx>0){
+							var ext_n = reverse_fn.substring(0, idx).split('').reverse().join('');
+							self.extname = ext_n;
+						}
 						self.category = self.cData.category;
 						self.fileName = self.cData.filename;
 						self.formatSize = self.cData.format_size;
+					} else {
+						self.extname = null;
+						self.fileName = data.node.text;
+						self.formatSize = '-K';
+						self.show_preview_btn = false;
 					}
+					self.thumb = avatar;
 				}
 			});
 		},
@@ -375,6 +506,7 @@ export default {
 				}
 				if(utils.exists(item.thumb)){
 					self.thumb = item.thumb;
+					self.extname = null;
 				} else {
 					self.thumb = avatar;
 				}
@@ -407,7 +539,7 @@ export default {
 				}
 				*/
 			} else {
-				self.btnIcon = "el-icon-question";
+				// self.btnIcon = "el-icon-question";
 				self.thumb = avatar;
 			}
 			
@@ -418,15 +550,16 @@ export default {
 			window.global_context.addListener('tree',function(args){
 				var id = args.id;
 				var cmd = args.cmd;
-				console.log('args:', args);
+				// console.log('args:', args);
 				if("info" == cmd){
 					if(args.data){
 						var item = args.data.item;
 						self.update_node_info(item);
 					} else {
-						self.btnIcon = "el-icon-question";
+						// self.btnIcon = "el-icon-question";
 						self.thumb = avatar;
 					}
+					self.show_preview_btn = false;
 					self.app().load_end();
 				} else if("download" == cmd){
 					console.log('download args:', args);

@@ -6,7 +6,7 @@ export default {
 		return{
 			hide_dot:true,
 			header_css: 'my-menu-header-win',
-			popover_disabled:false,
+			popover_disabled:true,
 			login_witdh:'200px',
 			portrait:null,
 			portrait_url:avatar,
@@ -66,6 +66,7 @@ export default {
 			}
 		},
 		init_ui(){
+			this.popover_disabled = false;
 			if(window.global_context){
 				var os = window.global_context.os;
 				console.log('os:', os);
@@ -140,22 +141,6 @@ export default {
 		if(new_hh<240){new_hh=240;}
 		this.headerHeight = new_hh+'px';
 		var load_datas = ()=>{
-			// axios.get('/open/loops').then((res)=>{
-			// 	if(res.data && res.data.hasOwnProperty('sources')){
-			// 		var _fr = res.data.fr;
-			// 		if(_fr>0){
-			// 			self.fr = _fr * 1000;
-			// 		}
-			// 		var sources = res.data.sources;
-			// 		for(var i=0;i<sources.length;i++){
-			// 			var item = sources[i];
-			// 			var pos_item = {src: item.srcurl, type:item.type, id:item.id, idx:item.idx}
-			// 			self.$set(self.items, i, pos_item);
-			// 		}
-			// 	}
-			// },()=>{
-			// 	console.log('请求失败!');
-			// });
 		};
 		load_datas();
 	}

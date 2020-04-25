@@ -1,6 +1,7 @@
 module.exports = {
 	"STATE":{"START":2},
 	"POINT":"http://127.0.0.1:8080/",
+	"adcachetimeout":144000,//Seconds
 	exists:function(s){
 		if(s && s.length>0){
 			return true;

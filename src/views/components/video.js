@@ -1,6 +1,6 @@
 const axios = require('axios');
 const utils = require('../../utils.js');
-import avatar from '../../assets/img/iso.png';
+import avatar from '../../assets/img/empty_icon.png';
 export default {
 	data(){
 		return {

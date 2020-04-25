@@ -1,4 +1,5 @@
 const utils = require('./utils.js');
+const loading_timeout = 35000;
 export default {
 	data:function(){
 		return {
@@ -24,7 +25,8 @@ export default {
 			header_info_pos:0,
 			header_info_pos_counter:0,
 			header_current_msg:null,
-			_load_obj:null
+			_load_obj:null,
+			loading_start_tm:0,
 		}
 	},
 	methods:{
@@ -37,6 +39,7 @@ export default {
 			this.modulesInit[key]=ctx;
 		},
 		load_start:function(){
+			this.loading_start_tm = Date.now();
 			this._load_obj = this.$loading({
 				lock: true,
 				text: 'Loading',
@@ -45,6 +48,7 @@ export default {
 			});
 		},
 		load_end:function(){
+			this.loading_start_tm = 0;
 			this._load_obj.close();
 		},
 		send:function(args){
@@ -90,6 +94,15 @@ export default {
 		heart_call(){
 			var self = this;
 			// console.log('heart in:', Date.now());
+			if(this.loading_start_tm > 0){
+				if(Date.now() - this.loading_start_tm > loading_timeout){
+					this.load_end();
+					self.$message({
+					  type: 'info',
+					  message: `注意: 网络超时!`
+					});
+				}
+			}
 			if(this.heart_listener_map){
 				var will_del = [];
 				for(var tag in self.heart_listener_map){
@@ -196,7 +209,7 @@ export default {
 		},
 		check_global_context:function(){
 			var self = this;
-			self.load_start();
+			
 			function check_modules_inited(){
 				for(var i=0;i<self.modules.length;i++){
 					var m = self.modules[i];
@@ -327,6 +340,7 @@ export default {
 	},
 	mounted:function(){
 		var self = this;
+		self.load_start();
 		window.addEventListener('resize',function(){
 			self.cHeight = document.documentElement.clientHeight - 0;
 			self.cWidth = document.documentElement.clientWidth - 0; 

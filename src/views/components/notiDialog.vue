@@ -1,9 +1,11 @@
 <template>
 	<el-dialog :title="title" :visible.sync="outerVisible" 
-	:close-on-click-modal="false" 
+	:close-on-click-modal="closeOnClickModal" 
+	:close-on-press-escape="closeOnPressEsc"
 	:show-close="showClose" 
+	:fullscreen="isfullscreen"
 	@close="onclose"
-	:close-on-press-escape="false">
+	>
 		<slot></slot>
 		<div slot="footer" class="dialog-footer">
 	    </div>

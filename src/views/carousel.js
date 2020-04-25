@@ -4,6 +4,9 @@ export default {
 	data(){
 		  return {
 			carouselHeight:'240px',
+			current_index:0,
+			changed_index:0,
+			delay_tm:0,
 			fr:8000,
 			items:[]
 		  }
@@ -12,7 +15,25 @@ export default {
 		app(){
 			return this.$root.$children[0];
 		},
+		changed(id){
+			this.changed_index = id;
+			this.delay_tm = Date.now() + 1000;
+		},
+		heart_call(){
+			if(this.delay_tm<Date.now()){
+				this.current_index = this.changed_index;
+			}
+		},
 		handleClick(id){
+			var self = this;
+			// console.log('click id:', id, ',self.current_index:',self.current_index);
+			if(self.current_index == id){
+				self.app().open_alert("请您加微,可获知更多资源!", false, '联系方法', ()=>{
+				},{
+					'btn_txt':'关闭',
+					'show_warning':false
+				});
+			}
 		},
 		load_cards(){
 			var self = this;
@@ -24,10 +45,12 @@ export default {
 						if(_fr>0){
 							self.fr = _fr * 1000;
 						}
+						var adcachetimeout = utils.adcachetimeout;
 						var sources = res.data.sources;
 						for(var i=0;i<sources.length;i++){
 							var item = sources[i];
-							var pos_item = {src: utils.join(point,item.srcurl), type:item.type, id:item.id, idx:item.idx}
+							
+							var pos_item = {src: 'cache:'+adcachetimeout+':'+utils.join(point,item.srcurl), type:item.type, id:item.id, idx:item.idx}
 							self.$set(self.items, i, pos_item);
 						}
 					}
@@ -45,6 +68,9 @@ export default {
 			var h = Math.round(h/3);
 			if(h<240){h=240;}
 			self.carouselHeight = h + 'px';
+		});
+		self.app().bind_heart_listener('carousel', ()=>{
+			self.heart_call();
 		});
 		self.app().check_st('carousel', utils.STATE.START, (v)=>{
 			self.load_cards();
